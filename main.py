@@ -18,7 +18,7 @@ load_dotenv()
 
 def get_secret():
     secret_name = os.getenv("AWS_SECRET_NAME")
-    region_name = os.getenv("AWS_REGION")
+    region_name = os.getenv("REGION")
 
     session = boto3.session.Session()
     client = session.client(service_name="secretsmanager", region_name=region_name)
