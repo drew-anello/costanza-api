@@ -1,0 +1,32 @@
+name: Deploy to EC2
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+    build-and-push:
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: Checkout Code
+            uses: actions/checkout@v3
+
+          - name: Configure AWS Credentials
+            uses: aws-actions/configure-aws-credentials@v3
+            with:
+              role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+              aws-region: us-east-1
+
+          - name: Log in to Amazon ECR
+            id: login-ecr
+            uses: aws-actions/amazon-ecr-login@v2
+
+          - name: Build, Tag, and Push Docker Image
+            env:
+              REPOSITORY_URI: 265842400786.dkr.ecr.us-east-1.amazonaws.com/costanza-fast-api-backend
+              IMAGE_TAG: latest
+            run: |
+              docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+              docker push $REPOSITORY_URI:$IMAGE_TAG
