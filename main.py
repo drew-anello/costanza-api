@@ -8,39 +8,20 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from dotenv import load_dotenv
 import os
-import boto3
-from botocore.exceptions import ClientError
-import json
 from sqlalchemy.sql import func
 
 load_dotenv()
 
+db_username = os.getenv("POSTGRES_USER")
+db_password = os.getenv("POSTGRES_PASSWORD")
+db_host = os.getenv("POSTGRES_HOST")
+db_name = os.getenv("POSTGRES_DB")
 
-def get_secret():
-    secret_name = os.getenv("AWS_SECRET_NAME")
-    region_name = os.getenv("REGION")
-
-    session = boto3.session.Session()
-    client = session.client(service_name="secretsmanager", region_name=region_name)
-
-    try:
-        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
-    except ClientError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-    secret = json.loads(get_secret_value_response.get("SecretString", "{}"))
-    if not secret:
-        raise HTTPException(
-            status_code=500, detail="Failed to retrieve secret from AWS Secrets Manager"
-        )
-    return secret
-
-
-secret = get_secret()
-db_username = secret.get("POSTGRES_USER")
-db_password = secret.get("POSTGRES_PASSWORD")
-db_host = secret.get("POSTGRES_HOST")
-db_name = secret.get("POSTGRES_DB")
+if not all([db_username, db_password, db_host, db_name]):
+    raise HTTPException(
+        status_code=500,
+        detail="Database credentials not found in the environment variables",
+    )
 
 if not all([db_username, db_password, db_host, db_name]):
     raise HTTPException(
