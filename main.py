@@ -3,58 +3,17 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from mangum import Mangum
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from dotenv import load_dotenv
-import os
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
-load_dotenv()
-
-db_username = os.getenv("POSTGRES_USER")
-db_password = os.getenv("POSTGRES_PASSWORD")
-db_host = os.getenv("POSTGRES_HOST")
-db_name = os.getenv("POSTGRES_DB")
-
-if not all([db_username, db_password, db_host, db_name]):
-    raise HTTPException(
-        status_code=500,
-        detail="Database credentials not found in the environment variables",
-    )
-
-if not all([db_username, db_password, db_host, db_name]):
-    raise HTTPException(
-        status_code=500, detail="Database credentials not found in the secret"
-    )
-
-SQLALCHEMY_DATABASE_URL = (
-    f"postgresql://{db_username}:{db_password}@{db_host}/{db_name}"
-)
-if not SQLALCHEMY_DATABASE_URL:
-    raise HTTPException(status_code=500, detail="DB_URL not found in the secret")
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-
-class Quote(Base):
-    __tablename__ = "quotes"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    quote = Column(String, nullable=False, unique=True)
-    season = Column(Integer, nullable=False)
-    episode = Column(Integer, nullable=False)
-    character = Column(String, nullable=False)
-
-
-Base.metadata.create_all(bind=engine)
+from app.db import get_db
+from app.models import Quote
 
 app = FastAPI()
 handler = Mangum(app)
 
 
+# Schema for validation
 class QuoteSchema(BaseModel):
     quote: str
     season: int
@@ -63,14 +22,6 @@ class QuoteSchema(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @app.get("/")

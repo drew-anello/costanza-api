@@ -30,7 +30,7 @@ Access the following endpoints to interact with the API:
 - `GET /getquotes/` - Retrieve all quotes.
 - `GET /quote/random` - Retrieve a random quote.
 - `GET /quotes/{character}` - Retrieve all quotes by character (`george` or `frank`).
-- `GET /quotes/{character}/random` - Retrieve a random quote by character (`george` or `frank`).
+- `GET /{character}/random` - Retrieve a random quote by character (`george` or `frank`).
 
 Example:
 
