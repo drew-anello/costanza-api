@@ -18,9 +18,6 @@ The Costazna API is a serverless application built with FastAPI and hosted on AW
 - Python 3.11 or higher
 - pip package manager
 
-## Deployment
-
-
 ## Usage
 
 Access the following endpoints to interact with the API:
