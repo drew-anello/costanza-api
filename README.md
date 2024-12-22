@@ -32,5 +32,5 @@ Access the following endpoints to interact with the API:
 Example:
 
 ```bash
-curl https://your-api-endpoint/quotes/george
+curl https://costanza.vandelayindustries.biz/quotes/george
 ```
