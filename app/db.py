@@ -6,19 +6,31 @@ import os
 
 load_dotenv()
 
-db_username = os.getenv("POSTGRES_USER")
-db_password = os.getenv("POSTGRES_PASSWORD")
-db_host = os.getenv("POSTGRES_HOST")
-db_name = os.getenv("POSTGRES_DB")
+SQLALCHEMY_DATABASE_URL = (os.getenv("DATABASE_PUBLIC_URL") or os.getenv("DATABASE_URL") or "").strip()
 
-if not all([db_username, db_password, db_host, db_name]):
-    raise Exception("Database credentials are missing in environment variables")
+if not SQLALCHEMY_DATABASE_URL:
 
-SQLALCHEMY_DATABASE_URL = (
-    f"postgresql://{db_username}:{db_password}@{db_host}/{db_name}"
-)
+    db_username = os.getenv("POSTGRES_USER") or os.getenv("PGUSER")
+    db_password = os.getenv("POSTGRES_PASSWORD") or os.getenv("PGPASSWORD")
+    db_host = os.getenv("POSTGRES_HOST") or os.getenv("PGHOST")
+    db_name = os.getenv("POSTGRES_DB") or os.getenv("PGDATABASE")
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+    if not all([db_username, db_password, db_host, db_name]):
+        raise Exception("Database credentials are missing in environment variables")
+
+    SQLALCHEMY_DATABASE_URL = (
+        f"postgresql://{db_username}:{db_password}@{db_host}/{db_name}"
+    )
+
+if "railway" in SQLALCHEMY_DATABASE_URL:
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+psycopg://"),
+        connect_args={
+            "sslmode": "require"
+        }
+    )
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL.replace("postgresql://", "postgresql+psycopg://"))
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
